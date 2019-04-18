@@ -58,5 +58,5 @@ class Reaver(ExecutorHelper):
         self.meta['result'] = {'lines': []}
 
         while self.proc.returncode is None:
-            lines = (await self.proc.communicate())[0].decode()
-            self.meta['result']['lines'].update(lines.split('\n'))
+            line = (await self.proc.stdin.readline()).decode()
+            self.meta['result']['lines'].append(line)

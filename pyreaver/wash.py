@@ -1,6 +1,8 @@
 """Walsh."""
+from contextlib import suppress
 import asyncio
 import json
+
 from .executor import ExecutorHelper
 from .models import AccessPoint
 
@@ -49,8 +51,10 @@ class Wash(ExecutorHelper):
         self.meta['result'] = {'aps': []}
 
         while self.proc.returncode is None:
-            self.meta['result']['aps'].append(
-                AccessPoint(**json.loads(await self.proc.stdout.readline())))
+            with suppress(json.JSONDecodeError):
+                self.meta['result']['aps'].append(
+                    AccessPoint(
+                        **json.loads(await self.proc.stdout.readline())))
 
     def sorted_aps(self):
         """Return sorted aps by score."""
