@@ -25,31 +25,28 @@ keyword parameters and arguments, and checks them BEFORE trying to run them.
 
 With context managers::
 
-    async with pyreaver.attack() as reaver:
-        await reaver.run(sys.argv[1])
-        print(await reaver.get_result())
-
-    # This will create temporary files needed, and
-    # cleanup process after if required.
-
-
-And some sugar, like wash's result updater::
-    async def test(max_timeout):
-        async with pyreaver.wash() as wash:
-            with suppress(asyncio.TimeoutError):
-                async with timeout(max_timeout):
-                    await wash.run(sys.argv[1])
-                    while True:
-                        await asyncio.sleep(1)
-                        print(wash.meta)
-            return await pdump.proc.terminate()
+        async def do_scan(session, args, kwargs):
+            async with pyreaver.Wash() as reavo:
+                await reavo.run(*args, **kwargs)
+                while True:
+                    await asyncio.sleep(1)
+                    with suppress(KeyError):
+                        session.scan.results.update(
+                            {a.bssid: asdict(a)
+                             for a in reavo.sorted_aps()})
 
 
-    asyncio.run(test(10))
+::
 
-This will automatically keep updating, for 10 seconds, a meta["results"]
-property on wash.
-
+        async def do_crack(session, args, kwargs):
+            """
+            async with pyreaver.Reaver() as reavo:
+                await reavo.run(*args, **kwargs)
+                # TODO: we need to have some way to stop the process.
+                while True:
+                    with suppress(KeyError):
+                        session.crack.results = reavo.meta['result']['lines']
+                    await asyncio.sleep(1)
 
 Distributing
 ------------
